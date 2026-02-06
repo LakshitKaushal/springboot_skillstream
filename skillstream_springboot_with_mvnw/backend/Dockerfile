@@ -1,17 +1,22 @@
 # Use OpenJDK 17 as base image
 FROM eclipse-temurin:17-jdk-alpine
 
+# Install bash (needed for mvnw script)
+RUN apk add --no-cache bash
+
 # Set working directory
 WORKDIR /app
 
 # Copy entire backend directory
 COPY skillstream_springboot_with_mvnw/backend .
 
-# Make mvnw executable
-RUN chmod +x mvnw
+# Make mvnw executable and ensure .mvn directory exists
+RUN chmod +x mvnw && \
+    chmod +x mvnw.cmd && \
+    ls -la .mvn || echo ".mvn directory check"
 
 # Build the application
-RUN ./mvnw clean package -DskipTests
+RUN ./mvnw clean package -DskipTests -Dmaven.multiModuleProjectDirectory=/app
 
 # Expose port (Render will set PORT env var)
 EXPOSE ${PORT:-5000}
