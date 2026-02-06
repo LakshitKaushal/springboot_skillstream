@@ -10,7 +10,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 public class JwtUtil {
-    private static final String secret = System.getenv().getOrDefault("JWT_SECRET", "change_this_secret_for_prod");
+    private static final String secret = System.getenv().getOrDefault("JWT_SECRET", "zRfc7S3uhKBVMUZ6J2GoKv6jN4KiLvaPsG8GDC0nxPw=");
     private static final long expiration = Long.parseLong(System.getenv().getOrDefault("JWT_EXPIRATION_MS","86400000"));
 
     private static SecretKey getKey() {

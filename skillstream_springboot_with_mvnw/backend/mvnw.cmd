@@ -8,4 +8,4 @@ if not exist %WRAPPER_JAR% (
   powershell -Command "Invoke-WebRequest https://repo.maven.apache.org/maven2/io/takari/maven-wrapper/0.5.6/maven-wrapper-0.5.6.jar -OutFile %WRAPPER_JAR%"
   echo distributionUrl=https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.9.6/apache-maven-3.9.6-bin.zip > %WRAPPER_PROPERTIES%
 )
-java -cp %WRAPPER_JAR% org.apache.maven.wrapper.MavenWrapperMain %*
+java -Dmaven.multiModuleProjectDirectory="%CD%" -cp "%WRAPPER_JAR%" org.apache.maven.wrapper.MavenWrapperMain %*
