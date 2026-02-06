@@ -1,9 +1,9 @@
 # How to Find DATABASE_URL in Render
 
-## Method 1: From PostgreSQL Database Service
+## Method 1: From PostgreSQL Datastore Service
 
 1. Go to https://dashboard.render.com
-2. Click on your **PostgreSQL database** service (e.g., `skillstream-db`)
+2. Click on your **PostgreSQL datastore** service (e.g., `skillstream-db`)
 3. In the **Info** tab, you'll see:
    - **Internal Database URL** - Use this if your web service is in the same region
    - **External Database URL** - Use this if connecting from outside
@@ -16,13 +16,14 @@
 3. Go to **Environment** tab
 4. Look for `DATABASE_URL` in the list
 5. If it's there, you can click on it to see the value (password is hidden)
+6. If it's NOT there, use Method 3 to link your Datastore
 
-## Method 3: Link Database to Web Service (Recommended)
+## Method 3: Link Datastore to Web Service (Recommended)
 
 1. Go to your **Web Service** → **Environment** tab
 2. Click **"Add Environment Variable"**
-3. Select **"Add from Database"**
-4. Choose your PostgreSQL database from the dropdown
+3. Select **"Add from Datastore"** (or "Add from Database" if shown)
+4. Choose your PostgreSQL datastore from the dropdown
 5. Render will automatically add:
    - `DATABASE_URL` (full connection string)
    - `DB_USERNAME` (database username)
@@ -50,9 +51,9 @@ postgresql://skillstream_user:MyPassword123@dpg-abc123-a.oregon-postgres.render.
 
 ## Quick Checklist
 
-- [ ] PostgreSQL database is created
+- [ ] PostgreSQL datastore is created
 - [ ] Web Service is created
-- [ ] Database is linked to Web Service (Method 3)
+- [ ] Datastore is linked to Web Service (Method 3 - "Add from Datastore")
 - [ ] `DATABASE_URL` appears in Web Service → Environment tab
 - [ ] `SPRING_PROFILES_ACTIVE=prod` is set
 - [ ] `JWT_SECRET` is set
@@ -60,7 +61,8 @@ postgresql://skillstream_user:MyPassword123@dpg-abc123-a.oregon-postgres.render.
 ## Troubleshooting
 
 **If DATABASE_URL is missing:**
-- Use Method 3 to link the database
+- Use Method 3: Click "Add Environment Variable" → "Add from Datastore"
+- Select your PostgreSQL datastore from the dropdown
 - Make sure both services are in the same Render account
 
 **If connection fails:**
