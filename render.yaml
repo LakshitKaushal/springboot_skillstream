@@ -1,10 +1,9 @@
 services:
   - type: web
     name: skillstream-backend
-    env: java
-    rootDir: skillstream_springboot_with_mvnw/backend
-    buildCommand: chmod +x mvnw && ./mvnw clean package -DskipTests
-    startCommand: java -jar target/skillstream-backend-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod
+    env: docker
+    dockerfilePath: skillstream_springboot_with_mvnw/backend/Dockerfile
+    dockerContext: skillstream_springboot_with_mvnw/backend
     envVars:
       - key: SPRING_PROFILES_ACTIVE
         value: prod
