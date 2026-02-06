@@ -1,5 +1,7 @@
 package com.skillstream.config;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
@@ -11,6 +13,8 @@ import java.net.URI;
 
 @Configuration
 public class DatabaseConfig {
+
+    private static final Logger logger = LoggerFactory.getLogger(DatabaseConfig.class);
 
     @Value("${DATABASE_URL:}")
     private String databaseUrl;
@@ -24,6 +28,11 @@ public class DatabaseConfig {
     @Bean
     @Primary
     public DataSource dataSource() {
+        logger.info("Initializing DataSource...");
+        logger.info("DATABASE_URL is set: {}", databaseUrl != null && !databaseUrl.isEmpty());
+        logger.info("DB_USERNAME is set: {}", dbUsername != null && !dbUsername.isEmpty());
+        logger.info("DB_PASSWORD is set: {}", dbPassword != null && !dbPassword.isEmpty());
+        
         String jdbcUrl;
         String username;
         String password;
@@ -31,6 +40,7 @@ public class DatabaseConfig {
         // If DATABASE_URL is provided and doesn't start with jdbc, parse it
         if (databaseUrl != null && !databaseUrl.isEmpty() && !databaseUrl.startsWith("jdbc:")) {
             try {
+                logger.info("Parsing DATABASE_URL: {}", databaseUrl.replaceAll(":[^:@]+@", ":****@"));
                 // Parse postgresql://user:password@host:port/database
                 URI uri = new URI(databaseUrl);
                 String scheme = uri.getScheme();
@@ -51,7 +61,9 @@ public class DatabaseConfig {
                 
                 // Construct JDBC URL
                 jdbcUrl = String.format("jdbc:%s://%s:%d/%s", scheme, host, port, database);
+                logger.info("Constructed JDBC URL: jdbc:{}://{}:{}/{}", scheme, host, port, database);
             } catch (Exception e) {
+                logger.error("Error parsing DATABASE_URL: {}", e.getMessage());
                 // Fallback: try to convert postgresql:// to jdbc:postgresql://
                 if (databaseUrl.startsWith("postgresql://")) {
                     jdbcUrl = "jdbc:" + databaseUrl;
@@ -63,15 +75,22 @@ public class DatabaseConfig {
             }
         } else if (databaseUrl != null && !databaseUrl.isEmpty()) {
             // Already in JDBC format
+            logger.info("Using DATABASE_URL as-is (JDBC format)");
             jdbcUrl = databaseUrl;
             username = dbUsername;
             password = dbPassword;
         } else {
-            // No DATABASE_URL, use default (will fail but that's expected)
-            jdbcUrl = "";
-            username = dbUsername;
-            password = dbPassword;
+            // Try to construct from individual components
+            logger.warn("DATABASE_URL is not set. Attempting to use DB_USERNAME/DB_PASSWORD with default host.");
+            // This will likely fail, but let's try
+            throw new IllegalStateException("DATABASE_URL environment variable is required but not set. Please configure it in Render dashboard.");
         }
+        
+        if (jdbcUrl == null || jdbcUrl.isEmpty()) {
+            throw new IllegalStateException("JDBC URL cannot be empty. Check DATABASE_URL environment variable.");
+        }
+        
+        logger.info("Creating DataSource with URL: {}", jdbcUrl.replaceAll(":[^:@]+@", ":****@"));
         
         return DataSourceBuilder.create()
                 .url(jdbcUrl)
