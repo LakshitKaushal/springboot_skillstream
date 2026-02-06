@@ -5,15 +5,15 @@ FROM eclipse-temurin:17-jdk-alpine
 WORKDIR /app
 
 # Copy Maven wrapper and pom.xml first (for better caching)
-COPY skillstream_springboot_with_mvnw/backend/mvnw .
-COPY skillstream_springboot_with_mvnw/backend/.mvn .mvn
-COPY skillstream_springboot_with_mvnw/backend/pom.xml .
+COPY mvnw .
+COPY .mvn .mvn
+COPY pom.xml .
 
 # Make mvnw executable
 RUN chmod +x mvnw
 
 # Copy source code
-COPY skillstream_springboot_with_mvnw/backend/src ./src
+COPY src ./src
 
 # Build the application
 RUN ./mvnw clean package -DskipTests
