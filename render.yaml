@@ -2,8 +2,8 @@ services:
   - type: web
     name: skillstream-backend
     env: docker
-    dockerfilePath: skillstream_springboot_with_mvnw/backend/Dockerfile
-    dockerContext: skillstream_springboot_with_mvnw/backend
+    rootDir: skillstream_springboot_with_mvnw/backend
+    dockerfilePath: ./Dockerfile
     envVars:
       - key: SPRING_PROFILES_ACTIVE
         value: prod
