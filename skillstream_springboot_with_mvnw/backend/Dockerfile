@@ -4,16 +4,11 @@ FROM eclipse-temurin:17-jdk-alpine
 # Set working directory
 WORKDIR /app
 
-# Copy Maven wrapper and pom.xml first (for better caching)
-COPY mvnw .
-COPY .mvn .mvn
-COPY pom.xml .
+# Copy entire backend directory
+COPY skillstream_springboot_with_mvnw/backend .
 
 # Make mvnw executable
 RUN chmod +x mvnw
-
-# Copy source code
-COPY src ./src
 
 # Build the application
 RUN ./mvnw clean package -DskipTests
