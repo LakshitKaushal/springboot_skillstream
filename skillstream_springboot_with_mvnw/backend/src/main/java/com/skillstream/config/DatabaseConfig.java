@@ -1,7 +1,7 @@
 package com.skillstream.config;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
+import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -23,8 +23,10 @@ public class DatabaseConfig {
 
     @Bean
     @Primary
-    public DataSourceProperties dataSourceProperties() {
-        DataSourceProperties properties = new DataSourceProperties();
+    public DataSource dataSource() {
+        String jdbcUrl;
+        String username;
+        String password;
         
         // If DATABASE_URL is provided and doesn't start with jdbc, parse it
         if (databaseUrl != null && !databaseUrl.isEmpty() && !databaseUrl.startsWith("jdbc:")) {
@@ -37,48 +39,46 @@ public class DatabaseConfig {
                 int port = uri.getPort() == -1 ? 5432 : uri.getPort();
                 String database = uri.getPath().startsWith("/") ? uri.getPath().substring(1) : uri.getPath();
                 
-                // Extract username and password from userInfo
-                String username = dbUsername;
-                String password = dbPassword;
-                
+                // Extract username and password from userInfo or use separate variables
                 if (userInfo != null && !userInfo.isEmpty()) {
                     String[] userPass = userInfo.split(":");
-                    if (userPass.length >= 1) {
-                        username = userPass[0];
-                    }
-                    if (userPass.length >= 2) {
-                        password = userPass[1];
-                    }
+                    username = userPass.length >= 1 ? userPass[0] : dbUsername;
+                    password = userPass.length >= 2 ? userPass[1] : dbPassword;
+                } else {
+                    username = dbUsername;
+                    password = dbPassword;
                 }
                 
                 // Construct JDBC URL
-                String jdbcUrl = String.format("jdbc:%s://%s:%d/%s", scheme, host, port, database);
-                
-                properties.setUrl(jdbcUrl);
-                properties.setUsername(username);
-                properties.setPassword(password);
+                jdbcUrl = String.format("jdbc:%s://%s:%d/%s", scheme, host, port, database);
             } catch (Exception e) {
-                // Fallback: use DATABASE_URL as-is (might already be JDBC format)
-                properties.setUrl(databaseUrl.startsWith("jdbc:") ? databaseUrl : "jdbc:" + databaseUrl);
-                if (!dbUsername.isEmpty()) {
-                    properties.setUsername(dbUsername);
+                // Fallback: try to convert postgresql:// to jdbc:postgresql://
+                if (databaseUrl.startsWith("postgresql://")) {
+                    jdbcUrl = "jdbc:" + databaseUrl;
+                } else {
+                    jdbcUrl = databaseUrl;
                 }
-                if (!dbPassword.isEmpty()) {
-                    properties.setPassword(dbPassword);
-                }
+                username = dbUsername;
+                password = dbPassword;
             }
         } else if (databaseUrl != null && !databaseUrl.isEmpty()) {
             // Already in JDBC format
-            properties.setUrl(databaseUrl);
-            if (!dbUsername.isEmpty()) {
-                properties.setUsername(dbUsername);
-            }
-            if (!dbPassword.isEmpty()) {
-                properties.setPassword(dbPassword);
-            }
+            jdbcUrl = databaseUrl;
+            username = dbUsername;
+            password = dbPassword;
+        } else {
+            // No DATABASE_URL, use default (will fail but that's expected)
+            jdbcUrl = "";
+            username = dbUsername;
+            password = dbPassword;
         }
         
-        return properties;
+        return DataSourceBuilder.create()
+                .url(jdbcUrl)
+                .username(username)
+                .password(password)
+                .driverClassName("org.postgresql.Driver")
+                .build();
     }
 }
 
